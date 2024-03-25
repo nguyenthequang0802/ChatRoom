@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Message;
 use App\Models\Room;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,13 +23,8 @@ class RoomController extends Controller
         $input = $request->all();
         $infoRoom = Room::find($input['room_id']);
         $listMembers = $infoRoom->users;
-//        $ownerRoom = $infoRoom->owner;
-//        $listMembers = $listMembers->merge($ownerRoom);
-
-//        echo '<pre>';
-//        print_r($ownerRoom);
-//        echo '</pre>';
-//        exit();
+        $ownerRoom = $infoRoom->owner;
+        $listMembers = $listMembers->merge([$ownerRoom]);
         return response()->json(['infoRoom'=>$infoRoom , 'listMembers'=>$listMembers], 200);
     }
 
@@ -60,6 +56,10 @@ class RoomController extends Controller
         }
         return response()->json($rooms, 200);
     }
+
+    public function searchMember(Request $request){
+//        $search_member;
+    }
     public function join(Request $request): JsonResponse{
         $user = Auth::user();
         $input = $request->all();
@@ -69,5 +69,26 @@ class RoomController extends Controller
         }
         $message = "You have joined the room";
         return response()->json(["message" => $message, "room"=>$room], 200);
+    }
+    public function chatbox(Request $request){
+        $input = $request->all();
+        $room = Room::find($input['room_id']);
+        $listMembers = $room->users;
+        $ownerRoom = $room->owner;
+        $listMembers = $listMembers->merge([$ownerRoom]);
+        $messages = $room->messages;
+        $me = Auth::user();
+        return response()->json(["room" => $room, 'messages'=>$messages, 'listMembers'=>$listMembers, 'me' => $me], 200);
+    }
+
+    public function sendMess(Request $request){
+        $input = $request->all();
+        $message = Message::create([
+            'content' => $input['content'],
+            'type' => $input['type'],
+            'room_id' => $input['room_id'],
+            'user_id' => Auth::user()->id
+        ]);
+        return response()->json(['message' => $message],200);
     }
 }

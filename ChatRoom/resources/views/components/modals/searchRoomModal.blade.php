@@ -20,7 +20,6 @@
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
                     </div>
-
                 </form>
                 <!-- rooms list -->
                 <div class="w-full pb-6 px-8">

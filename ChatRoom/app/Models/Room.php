@@ -15,7 +15,8 @@ class Room extends Model
         'description',
         'owner_id',
     ];
-    protected $with = ['owner'];
+//    protected $with = ['owner'];
+
     public function owner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
@@ -23,5 +24,14 @@ class Room extends Model
     public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(User::class, 'room_user', 'room_id', 'user_id');
+    }
+//    public function allMembers(){
+//        $owner = $this->owner();
+//        $users = $this->users();
+//        return $users->merge([$owner]);
+//    }
+
+    public function messages(){
+        return $this->hasMany(Message::class, 'room_id');
     }
 }
