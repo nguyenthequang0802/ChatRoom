@@ -1,12 +1,10 @@
 <script>
     function openModal(modal_id){
-        console.log("open modal")
         let addNewRoomFormModal =  document.getElementById(modal_id);
         addNewRoomFormModal.classList.remove('hidden');
         addNewRoomFormModal.classList.add('visible');
     }
     function closeModal(modal_id){
-        console.log("close modal");
         let addNewRoomFormModal = document.getElementById(modal_id);
         addNewRoomFormModal.classList.remove('visible');
         addNewRoomFormModal.classList.add('hidden');
@@ -24,7 +22,6 @@
     }
 
     function showRoom(room_id){
-        console.log("show room ", room_id);
         $('#TagNameOfRoom').empty();
         $('#TagListMember').empty();
         $.ajax({
@@ -35,10 +32,8 @@
                 room_id: room_id
             },
             success: function (response){
-                console.log(response)
                 const info_room = response.infoRoom;
                 const list_members = response.listMembers;
-                console.log(list_members);
                 const infoNameHTML = `<div class="flex flex-wrap items-center" id="Room-${info_room.id}">
                                         <div class="h-12 w-12">
                                             <img src="${info_room.icon ?? 'https://inkythuatso.com/uploads/thumbnails/800/2022/03/4a7f73035bb4743ee57c0e351b3c8bed-29-13-53-17.jpg'}" alt="avatar" class="w-full h-full rounded-full border-2 border-red-500" />
@@ -88,7 +83,6 @@
     }
 
     function chatBox(room_id){
-        console.log('open chat', room_id);
         $.ajax({
             type: 'GET',
             url: '{{ route("room.chatbox") }}',
@@ -101,7 +95,6 @@
                 const members = response.listMembers;
                 const me = response.me;
                 const messages = room.messages;
-                console.log(response);
                 let listMessHtml = '';
                 let infoRoomHTML = `<div class="flex w-full h-[10vh] bg-[#262948] rounded-lg mb-8" id="infoRoom-${room.id}">
                                         <div class="flex flex-wrap items-center mx-5" >
@@ -118,8 +111,6 @@
                                             </div>
                                         </div>
                                     </div>`;
-                console.log(messages)
-                console.log(me.id)
                 for(let i = 0; i < messages.length; i++){
                     console.log(messages[i])
                     let time = new Date(messages[i].created_at);
@@ -150,24 +141,28 @@
                                         </div>`;
                     }
                 }
-                const inputHTML = `<div class="w-full h-[5vh] bg-[#262948] rounded-lg flex justify-center items-center px-2 py-[4px]" id="message-${room.id}">
-                    <input type="text" class="w-full h-full px-2 bg-white rounded-full mr-2" name="content" id="content">
+                const inputHTML = `<div class="w-full h-[46px] bg-[#262948] rounded-lg flex justify-center items-center px-2 py-[4px]" id="message-${room.id}">
+                    <input type="text" class="w-full h-full px-2 bg-white rounded-full mr-2 content" name="content" id="content-${room.id}" oninput="tagName(this, ${room.id})">
                     <div class="mr-2">
-                        <input type="file" class="hidden" name="content_img" id="input_img">
-                        <button class="text-[20px] text-white" id="btn-selectImage"><i class="fa-solid fa-camera"></i></button>
+                        <input type="file" class="hidden input_img" name="content_img" id="" onchange="openImage(event, '${room.id}')">
+                        <button class="text-[20px] text-white btn-selectImage" id="" onclick="selectFile()"><i class="fa-solid fa-camera"></i></button>
                     </div>
                     <button class="text-[20px] mr-2 text-white" id="btn_sendMessage" onclick="sendMessage('${room.id}')"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>`
+                </div>`;
                 $('#infoRoom').html(infoRoomHTML);
                 $('#boxChat').html(listMessHtml);
                 $('#form_mess').html(inputHTML);
+
             },
         })
     }
 
+    function tagName(input, room_id){
+        console.log(input.value);
+    }
+
     function sendMessage(room_id){
-        console.log('send message at',room_id);
-        let content = $('#content').val();
+        let content = $('.content').val();
         console.log(content);
         $.ajax({
             type: 'POST',
@@ -194,12 +189,61 @@
                                 <div class="text-white m-[5px]"><i class="fa-solid fa-ellipsis-vertical"></i></div>
                             </div>`;
               $('#boxChat').append(html);
-                $('#content').val('');
+              $('.content').val('');
+            },
+        });
+    }
+    function selectFile(){
+        $('.input_img').click()
+    }
+    // function openImage(event, room_id){
+    //     let file = event.target.files[0]; // Lấy tệp ảnh từ sự kiện
+    //
+    //     // Tạo một đối tượng FileReader
+    //     let reader = new FileReader();
+    //
+    //     // Xử lý sự kiện khi tệp được đọc
+    //     reader.onload = function(event) {
+    //         let fileData = event.target.result; // Lấy dữ liệu của tệp ảnh đã đọc
+    //
+    //         // Gọi hàm sendMessageWithImage để gửi tin nhắn với nội dung ảnh
+    //         sendMessageWithImage(room_id, fileData);
+    //         $('.content').val(reader.readAsDataURL(file));
+    //
+    //     };
+    //
+    //     // Đọc tệp ảnh như là một chuỗi dữ liệu
+    // }
+    function sendMessageWithImage(room_id, url){
+        let content = $('.content').val();
+        $.ajax({
+            type: 'POST',
+            url: '{{ route("room.sendMessage") }}',
+            data: {
+                _token: '{{ csrf_token() }}',
+                room_id: room_id,
+                content: content,
+                type: 'image',
+            },
+            success: function (response) {
+                console.log(response);
+                let time = new Date(response.message.created_at);
+                let hours = time.getHours();
+                let minutes = time.getMinutes();
+                const html = `<div class="flex flex-row-reverse mb-2">
+                                    <div class="h-10 w-10 m-[10px]">
+                                        @include('components.avatar', ['avatar_path' => $room->icon ?? 'https://inkythuatso.com/uploads/thumbnails/800/2022/03/4a7f73035bb4743ee57c0e351b3c8bed-29-13-53-17.jpg'])
+                                    </div>
+                                    <div class="bg-[#262948] rounded-lg p-2 text-white">
+                                        <img src="${url}" height="40px" width="40px">
+                                        <small class="float-left">${hours}:${minutes}</small>
+                                     </div>
+                                <div class="text-white m-[5px]"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                            </div>`;
+                $('#boxChat').append(html);
+                $('.content').val('');
             },
         });
     }
 
-    function tagName(){
-
-    }
 </script>

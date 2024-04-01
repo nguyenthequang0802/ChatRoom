@@ -58,7 +58,23 @@ class RoomController extends Controller
     }
 
     public function searchMember(Request $request){
-//        $search_member;
+        $input = $request->all();
+        $member_search = $input['content'];
+        if($member_search != ""){
+            $query = "";
+            for ($i=0; $i<strlen($member_search); $i++){
+                $query = $query.'%'.$member_search[$i];
+            }
+            $members = Room::find($input['room_id'])->users()->where('name', 'like', $query.'%')->get();
+        } else{
+            $members = Room::find($input['room_id'])->users()->get();
+        }
+        echo "<pre>";
+        print_r($members);
+        echo "</pre>";
+        exit();
+
+        return response()->json($members, 200);
     }
     public function join(Request $request): JsonResponse{
         $user = Auth::user();
@@ -91,4 +107,6 @@ class RoomController extends Controller
         ]);
         return response()->json(['message' => $message],200);
     }
+
+
 }

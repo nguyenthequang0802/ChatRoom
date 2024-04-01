@@ -43,7 +43,7 @@
 
                     </div>
                 </div>
-                <div id="form_mess">
+                <div id="form_mess" class="absolute w-[92%] bottom-[20px]">
 
                 </div>
             </div>
@@ -52,14 +52,8 @@
                     class="absolute top-0 right-0 border border-gray-300 bg-gray-300 w-8 h-8 rounded-full text-red-500 hover:text-white hover:bg-red-500 hover:border-red-500">
                 <i class="fa-solid fa-xmark"></i>
             </button>
+            @include('components.modals.tagName')
         </div>
+
     </div>
 </div>
-
-<script>
-    let btnImage = document.getElementById('btn-selectImage');
-    let inputImage = document.getElementById('input_img');
-    btnImage.addEventListener('click', ()=>{
-        inputImage.click();
-    })
-</script>
