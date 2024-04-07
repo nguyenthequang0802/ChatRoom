@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\Message;
 use App\Models\Room;
 use Illuminate\Http\JsonResponse;
@@ -103,9 +104,12 @@ class RoomController extends Controller
             'content' => $input['content'],
             'type' => $input['type'],
             'room_id' => $input['room_id'],
-            'user_id' => Auth::user()->id
+            'user_id' => Auth::user()->id,
         ]);
-        return response()->json(['message' => $message],200);
+//        return response()->json(['message' => $message],200);
+//        $room_id = 1;
+        event(new MessageSent($request->all(), $input['room_id']));
+        return response()->json($message,200);
     }
 
 
